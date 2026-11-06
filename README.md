@@ -69,6 +69,9 @@ npm start
   your current layout and colours.
 - **Custom shape:** in Export, choose Custom under Shape and type the width and height in pixels.
   Sides are rounded to even numbers and can be 64 to 7680. The preview takes the same shape.
+- **Colours from a picture:** in Studio, press Colours from a picture to build a palette from any
+  image: a background, text colour, accent and five-step ramp. It keeps text readable, and it ends
+  up as your Custom palette, so you can adjust it. Advanced elements can have their own.
 - **Bottom text:** in Studio, choose which parts show (BPM, key, loudness, look or mode name, time,
   length), and give the line its own font and colour.
 - **Share codes:** in Presets, press Copy code for this setup, or Code beside a saved preset, and

@@ -7,7 +7,7 @@
   "type": "commonjs",
   "scripts": {
     "start": "electron .",
-    "test": "node test/layout.test.mjs && node test/chop.test.mjs && node test/freeform.test.mjs && node test/presets.test.mjs && node test/analysis.test.mjs",
+    "test": "node test/layout.test.mjs && node test/chop.test.mjs && node test/freeform.test.mjs && node test/presets.test.mjs && node test/imagepalette.test.mjs && node test/analysis.test.mjs",
     "smoke": "electron . --smoke",
     "dist": "electron-builder --win portable"
   },

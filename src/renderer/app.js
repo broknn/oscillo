@@ -10,6 +10,7 @@ import { inPage, dropIn, replaceItem, replaceCell } from '../core/freeform.js';
 import { History } from '../core/history.js';
 import { capturePreset, applyPreset, putPreset } from '../core/presets.js';
 import { PAGES } from '../core/pages.js';
+import { paletteFromPixels } from '../core/imagepalette.js';
 import { encodeShare, decodeShare } from '../core/sharecode.js';
 import { makeTrack } from '../core/demo.js';
 import { exportVideo, renderPng, renderSvg, writePdf, sizeFor, customSide, bestStart, canVector, FORMATS, A3 } from './exporter.js';
@@ -755,6 +756,16 @@ function elementColours(it) {
     renderFree();
   };
   line('Colours', colours);
+  const fromPicture = document.createElement('button');
+  fromPicture.className = 'ghost wide'; fromPicture.textContent = 'Colours from a picture';
+  fromPicture.onclick = async () => {
+    const got = await pictureColours(await window.sp.pickImage());
+    if (!got?.palette) return;
+    it.palette = got.palette;
+    renderFree();
+    noteChange();
+  };
+  wrap.append(fromPicture);
 
   const mono = document.createElement('select');
   fontOptions(mono, it.mono, 'Same as page');
@@ -867,6 +878,7 @@ function renderStudio() {
       renderStudio();
     }));
   $('customColours').hidden = !mine;
+  if (!mine) $('paletteNote').hidden = true;
   if (mine) colourEditor($('customColours'), sc.palette, () => {
     sc.palette = { ...sc.palette };
     state.custom = sc.palette;
@@ -879,6 +891,41 @@ function renderStudio() {
   slider(sl, 'Motion', 0.2, 3, 0.05, sc.motion, (v) => { sc.motion = v; });
   slider(sl, 'Density', 0.3, 2, 0.05, sc.density, (v) => { sc.density = v; });
   renderParams();
+}
+
+// A small copy is plenty to find a picture's colours.
+async function paletteFromBytes(bytes) {
+  const picture = await createImageBitmap(new Blob([bytes]));
+  const k = Math.min(1, 200 / Math.max(picture.width, picture.height));
+  const w = Math.max(1, Math.round(picture.width * k)), h = Math.max(1, Math.round(picture.height * k));
+  const c = new OffscreenCanvas(w, h), x = c.getContext('2d', { willReadFrequently: true });
+  x.imageSmoothingQuality = 'high';
+  x.drawImage(picture, 0, 0, w, h);
+  picture.close();
+  return paletteFromPixels(x.getImageData(0, 0, w, h).data);
+}
+
+// Null if the dialog was cancelled. Anything else that stops it comes back as a message.
+async function pictureColours(file) {
+  if (!file) return null;
+  try {
+    const palette = await paletteFromBytes(file.bytes);
+    return palette ? { palette, note: `Colours from ${file.name}. Adjust them above.` } : { note: `${file.name} has no visible colours.` };
+  } catch {
+    return { note: `Couldn't read ${file.name}.` };
+  }
+}
+
+async function setPictureColours(file) {
+  const got = await pictureColours(file);
+  if (!got) return;
+  if (got.palette) {
+    state.scene.palette = state.custom = got.palette;
+    renderStudio();
+    noteChange();
+  }
+  $('paletteNote').textContent = got.note;
+  $('paletteNote').hidden = false;
 }
 
 // Colour wells for your own palette. The five along the bottom are the look's colour ramp.
@@ -1117,6 +1164,7 @@ function bindControls() {
   $('moreFonts').onclick = loadInstalledFonts;
   $('pickVideo').onclick = chooseVideo;
   window.sp.onVideoProgress((frames) => busy(`Preparing video: ${frames} frames`, 0.5));
+  $('paletteImage').onclick = async () => setPictureColours(await window.sp.pickImage());
   $('pickImage').onclick = async () => {
     const r = await window.sp.pickImage();
     if (!r) return;
@@ -1276,6 +1324,6 @@ syncTransport();
 requestAnimationFrame(frame);
 
 if (new URLSearchParams(location.search).has('smoke')) {
-  window.app = { state, stage, audio, free, fitCanvas, noteChange, replaceSelected, renderLooks, addImages, renderParams, copyShare, loadShare, exportSize: () => sizeFor(segValue('xFormat'), segValue('xRes')), renderFree, setTempo, setVideo, loadDemo, addFiles, seek, play, pause, doExportVideo, stillExport, selectTrack, renderLooks, renderStudio, FORMATS, FR };
+  window.app = { state, stage, audio, free, fitCanvas, paletteFromBytes, setPictureColours, noteChange, replaceSelected, renderLooks, addImages, renderParams, copyShare, loadShare, exportSize: () => sizeFor(segValue('xFormat'), segValue('xRes')), renderFree, setTempo, setVideo, loadDemo, addFiles, seek, play, pause, doExportVideo, stillExport, selectTrack, renderLooks, renderStudio, FORMATS, FR };
   import('./smoke.js');
 }

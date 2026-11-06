@@ -666,6 +666,52 @@ try {
       document.querySelector('#xFormat [data-v="16:9"]').click();
     }
 
+    // Colours from a picture: real file bytes, then a look drawn with the result.
+    {
+      const makers = [
+        (x, u, v) => { const g = x.createLinearGradient(0, 0, 0, 180); g.addColorStop(0, '#2b3a8f'); g.addColorStop(0.55, '#e0604a'); g.addColorStop(1, '#ffc35c'); x.fillStyle = g; x.fillRect(0, 0, 320, 180); },
+        (x) => { x.fillStyle = '#132a1c'; x.fillRect(0, 0, 320, 180); for (let k = 0; k < 500; k++) { x.fillStyle = ['#2f7a44', '#7da83a', '#c9b24a'][k % 3]; x.beginPath(); x.arc((k * 73) % 320, (k * 131) % 180, 3 + (k % 7), 0, 7); x.fill(); } },
+        (x) => { x.fillStyle = '#f4e9dc'; x.fillRect(0, 0, 320, 180); ['#e8927c', '#7fb7be', '#f2c14e'].forEach((c, k) => { x.fillStyle = c; x.fillRect(30 + k * 90, 40, 70, 100); }); },
+      ];
+      const sheet = new OffscreenCanvas(960, 390), out = sheet.getContext('2d');
+      const samples = [];
+      for (const [k, make] of makers.entries()) {
+        const c = new OffscreenCanvas(320, 180);
+        make(c.getContext('2d'));
+        const bytes = new Uint8Array(await (await c.convertToBlob({ type: 'image/png' })).arrayBuffer());
+        const palette = await app.paletteFromBytes(bytes);
+        if (!palette || palette.colors.length !== 5) fail('no palette from the picture');
+        samples.push(palette);
+        out.drawImage(c, k * 320, 0);
+        [palette.bg, palette.fg, palette.accent, ...palette.colors].forEach((colour, n) => { out.fillStyle = colour; out.fillRect(k * 320 + n * 40, 180, 40, 30); });
+        const shot = new OffscreenCanvas(320, 180);
+        new Stage().render(shot.getContext('2d'), 320, 180, app.state.cur.A, 30, { ...defaultScene(), look: 'spectrum', palette });
+        out.drawImage(shot, k * 320, 210);
+      }
+      report.steps.pictureColours = samples;
+      await window.sp.write(file('picture-colours.png'), new Uint8Array(await (await sheet.convertToBlob({ type: 'image/png' })).arrayBuffer()));
+      const code = await app.copyShare(capturePreset('From picture', { ...defaultScene(), palette: samples[0] }, '16:9'));
+      const back = await app.loadShare(code);
+      if (JSON.stringify(back?.scene.palette) !== JSON.stringify(samples[0])) fail('picture colours did not survive a share code');
+      document.getElementById('presetName').value = '';
+
+      // The Studio button's path, past its file dialog.
+      const before = app.state.scene.palette;
+      const note = document.getElementById('paletteNote'), wells = document.getElementById('customColours');
+      const c = new OffscreenCanvas(320, 180);
+      makers[0](c.getContext('2d'));
+      const bytes = new Uint8Array(await (await c.convertToBlob({ type: 'image/png' })).arrayBuffer());
+      await app.setPictureColours({ name: 'sunset.png', bytes });
+      if (JSON.stringify(app.state.scene.palette) !== JSON.stringify(samples[0])) fail('the button did not set the palette');
+      if (wells.hidden || note.hidden || !note.textContent.includes('sunset.png')) fail('picture colours are not editable or not explained');
+      const chosen = app.state.scene.palette;
+      await app.setPictureColours({ name: 'broken.png', bytes: new Uint8Array([1, 2, 3]) });
+      if (app.state.scene.palette !== chosen || !note.textContent.includes("Couldn't read")) fail('a bad picture was not handled');
+      app.state.scene.palette = before;
+      app.renderStudio();
+      app.noteChange();
+    }
+
     // Replace in place, then undo and redo with the keyboard.
     {
       const sc = app.state.scene, was = { mode: sc.mode, free: sc.free, cells: sc.cells };

@@ -17,6 +17,7 @@ product's branding, and don't add licence keys or payment. User docs are in READ
   - `stage.js`: picks and composes looks. `layout.js`: pure Compose grid, shared by the renderer
     and the layout editor. `freeform.js`: pure Advanced mode moves, sizing and snapping; boxes are
     fractions of the page. `svgctx.js` records canvas calls as SVG.
+  - `imagepalette.js`: pure palette from RGBA pixels, grouped in OKLab.
   - `pages.js`: ready-made Advanced layouts in preset form.
   - `sharecode.js`: presets as text. Codes are untrusted, so `cleanShared` rebuilds them field by
     field; new scene settings must be added there as well as to `KEPT`.
