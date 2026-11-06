@@ -16,7 +16,8 @@
     "productName": "Oscillo",
     "files": ["src/**/*", "package.json"],
     "asarUnpack": ["node_modules/ffmpeg-static/**"],
-    "win": { "target": "portable" },
+    "win": {
+      "icon": "build/icon.ico", "target": "portable" },
     "directories": { "output": "dist" }
   },
   "dependencies": {

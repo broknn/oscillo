@@ -25,6 +25,7 @@ function createMain() {
     width: 1500, height: 920, minWidth: 1080, minHeight: 680,
     backgroundColor: '#0b0c0e',
     title: 'Oscillo',
+    icon: renderer('icon.png'),
     autoHideMenuBar: true,
     show: !smoke || process.argv.includes('--show'),
     webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, backgroundThrottling: false },
@@ -41,6 +42,7 @@ function openListen() {
     width: 460, height: 300, minWidth: 220, minHeight: 140,
     frame: false, alwaysOnTop: true, backgroundColor: '#0e0f11',
     title: 'Oscillo Listen',
+    icon: renderer('icon.png'),
     show: !smoke || process.argv.includes('--show'),
     webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, backgroundThrottling: false },
   });

@@ -142,6 +142,7 @@ dd.tempo button { padding: 1px 5px; }
 #footerColour { flex: 1; min-width: 0; height: 24px; padding: 0; background: none; border: 1px solid var(--line2); }
 .addpictures { display: flex; gap: 4px; margin-bottom: 8px; }
 .addpictures button:first-child { flex: 1; }
+.brand img { width: 20px; height: 20px; margin-right: 7px; vertical-align: -4px; }
 .field { display: flex; align-items: center; gap: 10px; margin: 7px 0; }
 .field > span { width: 58px; flex: none; color: var(--dim); }
 input[type=text], #title { flex: 1; min-width: 0; background: #0c0d0f; border: 1px solid var(--line2); color: var(--fg); padding: 5px 8px; border-radius: 3px; font: inherit; user-select: text; }

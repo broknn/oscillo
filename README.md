@@ -1,3 +1,5 @@
+<img src="build/icon.png" width="96" alt="Oscillo logo">
+
 # Oscillo
 
 Turns one track into moving and printable pictures. Drop in an audio file and Oscillo
