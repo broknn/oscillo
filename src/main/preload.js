@@ -1,0 +1,35 @@
+const { contextBridge, ipcRenderer, webUtils } = require('electron');
+
+const call = (ch) => (...a) => ipcRenderer.invoke(ch, ...a);
+
+contextBridge.exposeInMainWorld('sp', {
+  pickAudio: call('audio:pick'),
+  decode: call('audio:decode'),
+  pickImage: call('image:pick'),
+  copyText: call('clipboard:write'),
+  pickImages: call('images:pick'),
+  pickVideo: call('video:pick'),
+  readPresets: call('presets:read'),
+  writePresets: call('presets:write'),
+  prepareVideo: call('video:prepare'),
+  dropVideo: call('video:drop'),
+  onVideoProgress: (fn) => ipcRenderer.on('video:progress', (_e, frames) => fn(frames)),
+  saveDialog: call('file:save'),
+  write: call('file:write'),
+  reveal: call('file:reveal'),
+  tmpTrack: call('tmp:track'),
+  exportStart: call('export:start'),
+  exportFrame: call('export:frame'),
+  exportFinish: call('export:finish'),
+  exportCancel: call('export:cancel'),
+  probe: call('export:probe'),
+  writePdf: call('pdf:write'),
+  openListen: call('listen:open'),
+  closeListen: call('listen:close'),
+  smokeInfo: call('smoke:info'),
+  smokeVideo: call('smoke:video'),
+  smokeFonts: call('smoke:fonts'),
+  smokeCapture: call('smoke:capture'),
+  smokeDone: call('smoke:done'),
+  pathOf: (file) => webUtils.getPathForFile(file),
+});

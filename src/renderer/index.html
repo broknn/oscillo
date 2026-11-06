@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Oscillo</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+    <aside id="left">
+      <header class="brand">oscillo<i></i></header>
+      <div class="side-head"><span>Tracks</span><button id="addTrack" class="ghost">Add</button></div>
+      <ul id="playlist"></ul>
+      <button id="demo" class="ghost wide">Load demo beat</button>
+      <section id="facts" hidden>
+        <div class="side-head"><span>Heard in the track</span></div>
+        <dl>
+          <dt>Tempo</dt><dd class="tempo"><input id="fBpm" type="number" min="30" max="300" step="0.1" title="Type the tempo if it heard wrong"><button id="bpmHalf" class="ghost" title="Half the tempo">÷2</button><button id="bpmDouble" class="ghost" title="Double the tempo">×2</button></dd>
+          <dt>Key</dt><dd id="fKey"></dd>
+          <dt>Loudness</dt><dd id="fLufs"></dd>
+          <dt>Peak</dt><dd id="fPeak"></dd>
+          <dt>Kicks</dt><dd id="fKick"></dd>
+          <dt>Snares</dt><dd id="fSnare"></dd>
+          <dt>Hats</dt><dd id="fHat"></dd>
+          <dt>Notes</dt><dd id="fNotes"></dd>
+        </dl>
+      </section>
+      <button id="listen" class="ghost wide">Open Listen window</button>
+    </aside>
+
+    <main id="centre">
+      <div id="stageWrap">
+        <canvas id="stage"></canvas>
+        <div id="freeLayer" hidden></div>
+        <div id="empty">
+          <h1>Drop a track</h1>
+          <p>MP3, WAV, AIFF, FLAC, M4A or OGG. A MIDI file with the same name attaches by itself. Nothing leaves this computer.</p>
+        </div>
+        <div id="busy" hidden><span id="busyText"></span><div class="bar"><b id="busyBar"></b></div></div>
+      </div>
+      <footer id="transport">
+        <button id="play" title="Play / pause (Space)" disabled>Play</button>
+        <span id="time">0:00 / 0:00</span>
+        <canvas id="wave"></canvas>
+        <label id="volumeBox" title="Preview volume. Exports are not affected.">Vol <input type="range" id="volume" min="0" max="100" step="1" value="100"></label>
+      </footer>
+    </main>
+
+    <aside id="right">
+      <nav id="tabs">
+        <button data-tab="looks" class="on">Looks</button>
+        <button data-tab="studio">Studio</button>
+        <button data-tab="presets">Presets</button>
+        <button data-tab="export">Export</button>
+      </nav>
+
+      <section class="tab" data-tab="looks">
+        <div class="seg" id="mode">
+          <button data-v="single" class="on">Single</button>
+          <button data-v="compose">Compose</button>
+          <button data-v="auto">Auto edit</button>
+          <button data-v="free">Advanced</button>
+        </div>
+        <p id="modeHint" class="hint"></p>
+        <div id="layout" hidden>
+          <div id="layoutMap"></div>
+          <div id="layoutCols"></div>
+          <div id="layoutCell"></div>
+        </div>
+        <div id="free" hidden>
+          <div id="freeList"></div>
+          <div id="freeCell"></div>
+        </div>
+        <div id="lookParamsWrap" hidden>
+          <div class="paramhead">
+            <h3 id="lookParamsTitle"></h3>
+            <select id="autoPick" hidden></select>
+            <button id="resetParams" class="ghost">Reset</button>
+          </div>
+          <div id="lookParams"></div>
+        </div>
+        <div id="lookList"></div>
+      </section>
+
+      <section class="tab" data-tab="studio" hidden>
+        <label class="field"><span>Title</span><input id="title" placeholder="Track name"></label>
+        <h3>Palette</h3>
+        <div id="palettes"></div>
+        <div id="customColours" class="swatches" hidden></div>
+        <h3>Fonts</h3>
+        <label class="field"><span>Title</span><select id="fontTitle"></select></label>
+        <label class="field"><span>Readouts</span><select id="fontMono"></select></label>
+        <button id="moreFonts" class="ghost wide">Add my installed fonts</button>
+        <h3>Page</h3>
+        <div id="sliders"></div>
+        <label class="check"><input type="checkbox" id="chrome" checked> Show title and readouts</label>
+        <label class="check"><input type="checkbox" id="labels" checked> Show corner labels on elements</label>
+        <h3>Bottom text</h3>
+        <div id="footerParts"></div>
+        <label class="field"><span>Font</span><select id="fontFooter"></select></label>
+        <div class="field"><span>Colour</span><input type="color" id="footerColour"><button id="footerColourReset" class="ghost">Default</button></div>
+        <h3>Video</h3>
+        <div class="row">
+          <button id="pickVideo" class="ghost">Choose video</button>
+          <span id="videoName" class="hint">For the Video look</span>
+        </div>
+        <h3>Picture</h3>
+        <div class="row">
+          <button id="pickImage" class="ghost">Choose picture</button>
+          <span id="imageName" class="hint">For the Portrait pen</span>
+        </div>
+        <div class="row"><button id="reseed" class="ghost">New variation</button><button id="resetLook" class="ghost">Reset</button></div>
+      </section>
+
+      <section class="tab" data-tab="presets" hidden>
+        <h3>Share codes</h3>
+        <p class="hint">A code carries a setup to a friend's Oscillo: layout, looks and settings, colours, fonts and page shape. Tracks, pictures and video don't travel, and they need any fonts you installed yourself.</p>
+        <button id="copyShare" class="ghost wide">Copy code for this setup</button>
+        <div class="presetsave">
+          <input id="shareCode" placeholder="Paste a code">
+          <button id="loadShare" class="ghost" disabled>Load</button>
+        </div>
+        <p class="hint" id="shareStatus" hidden></p>
+        <h3>Ready-made pages</h3>
+        <div id="pageList"></div>
+        <h3>Your presets</h3>
+        <p class="hint">A preset keeps your layout, looks and their settings, effects, colours, fonts and page shape. Your tracks, video, picture and title stay as they are.</p>
+        <div class="presetsave">
+          <input id="presetName" placeholder="Name this setup" maxlength="60">
+          <button id="savePreset" class="ghost" disabled>Save</button>
+        </div>
+        <div id="presetList"></div>
+      </section>
+
+      <section class="tab" data-tab="export" hidden>
+        <h3>Video</h3>
+        <div class="field"><span>Shape</span><div class="seg" id="xFormat">
+          <button data-v="16:9" class="on">16:9</button><button data-v="9:16">9:16</button><button data-v="1:1">1:1</button><button data-v="4:5">4:5</button><button data-v="custom">Custom</button>
+        </div></div>
+        <div class="field" id="xCustom" hidden><span>Pixels</span>
+          <input id="xW" type="number" min="64" max="7680" step="2" value="1280"><i>×</i><input id="xH" type="number" min="64" max="7680" step="2" value="720">
+        </div>
+        <div class="field"><span>Length</span><div class="seg" id="xLength">
+          <button data-v="15" class="on">15 s</button><button data-v="30">30 s</button><button data-v="full">Full</button>
+        </div></div>
+        <div class="field" id="xResRow"><span>Size</span><div class="seg" id="xRes">
+          <button data-v="HD" class="on">HD</button><button data-v="4K">4K</button>
+        </div></div>
+        <div class="field"><span>Frames</span><div class="seg" id="xFps">
+          <button data-v="30">30</button><button data-v="60" class="on">60</button>
+        </div></div>
+        <div class="field"><span>Start</span><div class="seg" id="xStart">
+          <button data-v="best" class="on">Loudest</button><button data-v="head">Playhead</button>
+        </div></div>
+        <label class="check"><input type="checkbox" id="overlay"> Transparent overlay (ProRes 4444)</label>
+        <button id="exportVideo" class="primary wide" disabled>Export video</button>
+        <h3>Still</h3>
+        <p class="hint">Sheet looks print the whole track. Other looks freeze at the playhead.</p>
+        <div class="grid2">
+          <button id="xPng" class="ghost" disabled>A3 poster PNG</button>
+          <button id="xPdf" class="ghost" disabled>A3 poster PDF</button>
+          <button id="xSvg" class="ghost" disabled>A3 poster SVG</button>
+          <button id="xCover" class="ghost" disabled>Cover 3000 × 3000</button>
+        </div>
+        <p id="xStatus" class="hint"></p>
+      </section>
+    </aside>
+  </div>
+  <div id="dropHint"><span>Drop to add</span></div>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

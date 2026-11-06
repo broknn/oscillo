@@ -1,0 +1,29 @@
+{
+  "name": "oscillo",
+  "productName": "Oscillo",
+  "version": "0.1.0",
+  "description": "Turns a music track into synced visuals, videos, posters and covers.",
+  "main": "src/main/main.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "electron .",
+    "test": "node test/layout.test.mjs && node test/chop.test.mjs && node test/freeform.test.mjs && node test/presets.test.mjs && node test/analysis.test.mjs",
+    "smoke": "electron . --smoke",
+    "dist": "electron-builder --win portable"
+  },
+  "build": {
+    "appId": "local.oscillo.app",
+    "productName": "Oscillo",
+    "files": ["src/**/*", "package.json"],
+    "asarUnpack": ["node_modules/ffmpeg-static/**"],
+    "win": { "target": "portable" },
+    "directories": { "output": "dist" }
+  },
+  "dependencies": {
+    "ffmpeg-static": "^5.2.0"
+  },
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8"
+  }
+}
