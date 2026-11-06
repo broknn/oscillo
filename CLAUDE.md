@@ -63,7 +63,8 @@ product's branding, and don't add licence keys or payment. User docs are in READ
 `npm test` for analysis, `npm run smoke` for everything else. The smoke test writes pictures
 and `report.json` to `--out=<dir>` (default: a temp folder), so look at the contact sheets
 `looks-dark.png` and `looks-light.png`. The `audio:decode` error it logs is the deliberate
-bad-file test. Remove test output afterwards.
+bad-file test. Remove test output afterwards. Tests must stay silent: smoke mode mutes the window's output, and
+analysers still read the signal.
 
 Build with `CSC_IDENTITY_AUTO_DISCOVERY=false` set, then run
 `dist\win-unpacked\Oscillo.exe --smoke --out=<dir>` to prove the packaged FFmpeg path works.

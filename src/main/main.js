@@ -17,7 +17,7 @@ function ffmpegPath() {
 }
 const FFMPEG = ffmpegPath();
 
-let mainWindow = null, listenWindow = null, demoFile = null;
+let mainWindow = null, listenWindow = null, listenPinned = true, demoFile = null;
 const renderer = (file) => path.join(__dirname, '..', 'renderer', file);
 
 function createMain() {
@@ -30,6 +30,7 @@ function createMain() {
     webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, backgroundThrottling: false },
   });
   mainWindow.setMenu(null);
+  if (smoke) mainWindow.webContents.setAudioMuted(true); // tests stay silent; level checks read before the output
   mainWindow.loadFile(renderer('index.html'), { query: smoke ? { smoke: '1' } : {} });
   mainWindow.on('closed', () => { mainWindow = null; listenWindow?.close(); });
 }
@@ -43,7 +44,13 @@ function openListen() {
     show: !smoke || process.argv.includes('--show'),
     webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, backgroundThrottling: false },
   });
-  listenWindow.setAlwaysOnTop(true, 'floating');
+  listenWindow.setAlwaysOnTop(listenPinned, 'screen-saver');
+  // Other always-on-top windows can take over when they get focus, so step back in front.
+  listenWindow.on('blur', () => {
+    if (!listenPinned) return;
+    listenWindow.setAlwaysOnTop(true, 'screen-saver');
+    listenWindow.moveTop();
+  });
   listenWindow.loadFile(renderer('listen.html'), { query: smoke ? { smoke: '1' } : {} });
   listenWindow.on('closed', () => { listenWindow = null; });
 }
@@ -275,10 +282,19 @@ ipcMain.handle('pdf:write', async (_e, html, out) => {
 
 ipcMain.handle('listen:open', () => openListen());
 ipcMain.handle('listen:close', () => listenWindow?.close());
+ipcMain.handle('listen:pin', (_e, on) => {
+  listenPinned = !!on;
+  listenWindow?.setAlwaysOnTop(listenPinned, 'screen-saver');
+});
 
 // --- smoke test support --------------------------------------------------------
 
-ipcMain.handle('smoke:info', () => ({ out: smokeOut }));
+ipcMain.handle('smoke:info', () => ({ out: smokeOut, muted: mainWindow.webContents.isAudioMuted() }));
+ipcMain.handle('smoke:listenPin', async () => {
+  await listenWindow.webContents.executeJavaScript('document.getElementById("pin").click()', true);
+  await new Promise((r) => setTimeout(r, 200));
+  return listenWindow.isAlwaysOnTop();
+});
 ipcMain.handle('smoke:fonts', (e) => e.sender.executeJavaScript('document.getElementById("moreFonts").click()', true));
 ipcMain.handle('smoke:video', () => {
   const out = path.join(smokeOut, 'test-footage.mp4');

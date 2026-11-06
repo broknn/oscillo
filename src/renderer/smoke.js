@@ -82,7 +82,7 @@ try {
       for (const q of look.params ?? []) {
         const video = look.needsVideo ? footage : null;
         const dense = look.needsVideo || look.needsImages;
-        const fixed = look.needsImages ? { cut: 0 } : look.needsVideo ? { chop: 1, time: q.id === 'every' || q.id === 'mix' ? 18 : 7, gate: 2, target: 1, dissolve: 0.2, soft: 0.02, zoom: 1, rgb: 1, tint: 1 } : {};
+        const fixed = look.needsImages ? { cut: 0 } : look.needsVideo ? { cropZoom: 2, chop: 1, time: q.id === 'every' || q.id === 'mix' ? 18 : 7, gate: 2, target: 1, dissolve: 0.2, soft: 0.02, zoom: 1, rgb: 1, tint: 1 } : {};
         const shot = async (v, t) => {
           const c = new OffscreenCanvas(260, 260), g = c.getContext('2d', { willReadFrequently: true });
           const scene = { ...defaultScene(), look: look.id, image, images, video, palette: 'plasma', params: { [look.id]: { ...fixed, [q.id]: v } } };
@@ -105,6 +105,21 @@ try {
     }
     report.steps.settings = count;
     if (dead.length) fail(`settings with no effect: ${dead.join(', ')}`);
+
+    // Crop: at the far corners the footage must still fill the frame.
+    const cropTries = [{}, { cropZoom: 3 }, { cropZoom: 3, cropX: -1, cropY: -1 }, { cropZoom: 3, cropX: 1, cropY: 1 }];
+    const sheet = new OffscreenCanvas(320 * cropTries.length, 180), sx = sheet.getContext('2d');
+    for (const [k, crop] of cropTries.entries()) {
+      const c = new OffscreenCanvas(320, 180), g = c.getContext('2d', { willReadFrequently: true });
+      const scene = { ...defaultScene(), look: 'video', video: footage, chrome: false, palette: 'plasma', params: { video: crop } };
+      const st = new Stage();
+      await st.prepare(A, 38, scene);
+      st.render(g, 320, 180, A, 38, scene);
+      sx.drawImage(c, k * 320, 0);
+      const bg = g.getImageData(0, 0, 1, 1).data, far = g.getImageData(160, 90, 1, 1).data;
+      report.steps.crop = [...(report.steps.crop ?? []), [...bg].slice(0, 3).join() + ' ' + [...far].slice(0, 3).join()];
+    }
+    await window.sp.write(file('crop.png'), new Uint8Array(await (await sheet.convertToBlob({ type: 'image/png' })).arrayBuffer()));
   }
 
   // Instant looks must be pure: the same moment twice gives identical pixels.
@@ -705,8 +720,11 @@ try {
     if (!document.getElementById('xCustom').hidden) fail('custom pixels stayed up');
   }
 
+  if (!(await window.sp.smokeInfo()).muted) fail('tests must not play out loud');
   await window.sp.openListen();
   await wait(2000);
+  if (await window.sp.smokeListenPin()) fail('Listen stayed on top after unpinning');
+  if (!(await window.sp.smokeListenPin())) fail('Listen did not pin again');
   app.seek(10);
   app.play();
   await wait(7000);

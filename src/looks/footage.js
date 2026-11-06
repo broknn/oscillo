@@ -67,6 +67,9 @@ const video = {
   desc: 'Your own clip, with Beat Chop to cut it to the track',
   params: [
     flag('cover', 'Fill the frame'),
+    num('cropZoom', 'Crop zoom', 1, 6, 0.01, 1),
+    num('cropX', 'Crop left / right', -1, 1, 0.01, 0),
+    num('cropY', 'Crop up / down', -1, 1, 0.01, 0),
     num('offset', 'Start at', 0, 120, 0.1, 0),
     num('speed', 'Speed', 0.25, 3, 0.05, 1),
     flag('chop', 'Beat Chop', 0),
@@ -89,9 +92,11 @@ const video = {
     const { A, t, box, pal, p, seed, u, video: v } = s;
     if (!v) return;
     const plan = footagePlan(A, t, p, seed, v);
-    const zoom = p.zoom ? 1 + p.zoomAmt * A.val('kick', t) : 1;
+    const zoom = p.cropZoom * (p.zoom ? 1 + p.zoomAmt * A.val('kick', t) : 1);
     const fit = (p.cover ? Math.max(box.w / v.w, box.h / v.h) : Math.min(box.w / v.w, box.h / v.h)) * zoom;
-    const w = v.w * fit, h = v.h * fit, x = box.x + (box.w - w) / 2, y = box.y + (box.h - h) / 2;
+    const w = v.w * fit, h = v.h * fit;
+    // -1 and 1 put the picture's edges on the box's, so the crop can't run off the footage.
+    const x = box.x + ((box.w - w) / 2) * (1 + p.cropX), y = box.y + ((box.h - h) / 2) * (1 + p.cropY);
     const fadeOut = p.target === 0 ? plan.gate : 1;
     const split = p.rgb ? p.rgbAmt * u * A.val('snare', t) : 0;
 

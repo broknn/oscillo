@@ -35,7 +35,9 @@ npm start
   look back to its defaults.
 - **Video:** choose a clip in Studio or the Video look, or drop one on the window. It's turned
   into frames on disk first, so long clips take a moment and use temporary space. If no track is
-  loaded, the video's own sound becomes the track.
+  loaded, the video's own sound becomes the track. Crop zoom on the Video look moves in on the
+  clip, and Crop left / right and Crop up / down choose which part stays in view. At the ends of
+  those two, the clip's edge meets the frame's edge, so a zoomed crop never runs out of footage.
 - **Beat Chop:** a switch on the Video look. It locks the clip to the track's bars with 18 time
   patterns and 10 gate patterns, including stutters, tape stops, rewinds and strobes. There's no
   BPM to type, because it uses the beat grid Oscillo already found. Mix moves between
@@ -85,7 +87,9 @@ npm start
 - **Export:** video in 16:9, 9:16, 1:1 or 4:5, at 15 s, 30 s or full length, in HD or 4K.
   Transparent overlays come out as ProRes 4444. Stills are A3 posters (PNG, SVG, PDF) and
   3000×3000 covers.
-- **Listen:** a small always-on-top window that reacts to whatever the computer is playing.
+- **Listen:** a small always-on-top window that reacts to whatever the computer is playing. Hover
+  over it and press Pin to turn always on top off or on; it remembers your choice. Games in true
+  fullscreen draw over everything, so use borderless windowed mode with them.
 
 ## Commands
 

@@ -9,6 +9,7 @@ const canvas = $('c'), g = canvas.getContext('2d');
 const A = new LiveAnalysis();
 const stage = new Stage();
 const scene = { ...defaultScene(), look: 'spectrum', chrome: false, title: 'Listening' };
+let pinned = true;
 
 // Sheet pens need a known length and note looks need the whole file.
 const usable = LOOK_LIST.filter((l) => l.kind === 'instant' && l.group !== 'MIDI' && !l.offline);
@@ -18,13 +19,21 @@ try {
   const saved = JSON.parse(localStorage.getItem('listen') ?? '{}');
   if (saved.look && usable.some((l) => l.id === saved.look)) scene.look = saved.look;
   if (saved.palette && PALETTES[saved.palette]) scene.palette = saved.palette;
+  if (saved.pinned === false) pinned = false;
 } catch { /* the defaults are fine */ }
 $('look').value = scene.look;
 $('palette').value = scene.palette;
-const remember = () => { try { localStorage.setItem('listen', JSON.stringify({ look: scene.look, palette: scene.palette })); } catch {} };
+const remember = () => { try { localStorage.setItem('listen', JSON.stringify({ look: scene.look, palette: scene.palette, pinned })); } catch {} };
 $('look').onchange = (e) => { scene.look = e.target.value; remember(); };
 $('palette').onchange = (e) => { scene.palette = e.target.value; remember(); };
 $('close').onclick = () => window.sp.closeListen();
+const showPin = () => {
+  $('pin').classList.toggle('on', pinned);
+  $('pin').title = pinned ? 'Always on top: on' : 'Always on top: off';
+  window.sp.pinListen(pinned);
+};
+$('pin').onclick = () => { pinned = !pinned; showPin(); remember(); };
+showPin();
 
 let heard = 0;
 
